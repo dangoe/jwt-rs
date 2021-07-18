@@ -1,5 +1,6 @@
 mod jwt_model;
 mod jwt_signing;
+mod jwt_validation;
 
 use jwt_model::{Algorithm, ClaimsBuilder, Header, Type, UnsignedToken};
 use serde_json::Value;
@@ -21,5 +22,11 @@ fn main() {
             .build(),
     };
 
-    println!("{}", jwt_signing::sign(token, key).unwrap());
+    let signed_token = jwt_signing::sign(token, key).unwrap();
+    println!("{:?}", signed_token.encode().unwrap());
+    println!(
+        "{}",
+        jwt_validation::validate(signed_token.clone(), String::from("a").as_bytes()).unwrap()
+    );
+    println!("{}", jwt_validation::validate(signed_token.clone(), key).unwrap());
 }

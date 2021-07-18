@@ -160,3 +160,23 @@ where
     );
     Ok(base64_encoded)
 }
+
+#[derive(Clone, Debug)]
+pub struct SignedToken {
+    pub unsigned_token: UnsignedToken,
+    pub signature: String,
+}
+
+impl SignedToken {
+    pub fn new(unsigned_token: UnsignedToken, signature: String) -> SignedToken {
+        SignedToken {
+            unsigned_token: unsigned_token,
+            signature: signature,
+        }
+    }
+
+    pub fn encode(&self) -> Result<String, serde_json::Error> {
+        let encoded_unsigned_token = self.unsigned_token.encode()?;
+        Ok(format!("{}.{}", encoded_unsigned_token, self.signature))
+    }
+}

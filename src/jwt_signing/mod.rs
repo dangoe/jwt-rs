@@ -4,10 +4,10 @@ use base64;
 use hmac::digest::{BlockInput, FixedOutput, Reset, Update};
 use hmac::Hmac;
 use hmac::{Mac, NewMac};
-use jwt_model::{Algorithm, UnsignedToken};
+use jwt_model::{Algorithm, SignedToken, UnsignedToken};
 use sha2::{Sha256, Sha384, Sha512};
 
-pub fn sign(token: UnsignedToken, key: &[u8]) -> Result<String, serde_json::Error> {
+pub fn sign(token: UnsignedToken, key: &[u8]) -> Result<SignedToken, serde_json::Error> {
     match token.header.alg {
         Algorithm::HS256 => sign_with_hmac::<Sha256>(token, key),
         Algorithm::HS384 => sign_with_hmac::<Sha384>(token, key),
@@ -15,7 +15,10 @@ pub fn sign(token: UnsignedToken, key: &[u8]) -> Result<String, serde_json::Erro
     }
 }
 
-fn sign_with_hmac<D>(unsigned_token: UnsignedToken, key: &[u8]) -> Result<String, serde_json::Error>
+fn sign_with_hmac<D>(
+    unsigned_token: UnsignedToken,
+    key: &[u8],
+) -> Result<SignedToken, serde_json::Error>
 where
     D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
 {
@@ -30,5 +33,5 @@ where
         base64::Config::new(base64::CharacterSet::UrlSafe, false),
     );
 
-    Ok(format!("{}.{}", encoded_token, signature))
+    Ok(SignedToken::new(unsigned_token, signature))
 }
