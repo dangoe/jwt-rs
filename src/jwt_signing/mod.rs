@@ -7,7 +7,12 @@ use hmac::{Mac, NewMac};
 use jwt_model::{Algorithm, SignedToken, UnsignedToken};
 use sha2::{Sha256, Sha384, Sha512};
 
-pub fn sign(token: UnsignedToken, key: &[u8]) -> Result<SignedToken, serde_json::Error> {
+#[derive(Debug)]
+pub enum Error {
+    SerdeJson(serde_json::Error),
+}
+
+pub fn sign_token(token: UnsignedToken, key: &[u8]) -> Result<SignedToken, Error> {
     match token.header.alg {
         Algorithm::HS256 => sign_with_hmac::<Sha256>(token, key),
         Algorithm::HS384 => sign_with_hmac::<Sha384>(token, key),
@@ -15,16 +20,16 @@ pub fn sign(token: UnsignedToken, key: &[u8]) -> Result<SignedToken, serde_json:
     }
 }
 
-fn sign_with_hmac<D>(
-    unsigned_token: UnsignedToken,
-    key: &[u8],
-) -> Result<SignedToken, serde_json::Error>
+fn sign_with_hmac<D>(unsigned_token: UnsignedToken, key: &[u8]) -> Result<SignedToken, Error>
 where
     D: Update + BlockInput + FixedOutput + Reset + Default + Clone,
 {
-    let encoded_token = unsigned_token.encode()?;
+    let encoded_token = unsigned_token
+        .encode()
+        .map_err(|err| Error::SerdeJson(err))?;
 
-    let mut hmac = Hmac::<D>::new_from_slice(key).expect("HMAC is able to accept all key sizes");
+    // Unrwap is safe, since hmac accepts keys of any length
+    let mut hmac = Hmac::<D>::new_from_slice(key).unwrap();
     hmac.update(encoded_token.as_bytes());
     let output = hmac.finalize();
 

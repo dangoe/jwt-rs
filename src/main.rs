@@ -22,11 +22,11 @@ fn main() {
             .build(),
     };
 
-    let signed_token = jwt_signing::sign(token, key).unwrap();
+    let signed_token = jwt_signing::sign_token(token, key).unwrap();
     println!("{:?}", signed_token.encode().unwrap());
     println!(
         "{}",
-        jwt_validation::validate(signed_token.clone(), String::from("a").as_bytes()).unwrap()
+        jwt_validation::validate_token(signed_token.clone(), String::from("a").as_bytes()).unwrap()
     );
-    println!("{}", jwt_validation::validate(signed_token.clone(), key).unwrap());
+    println!("{}", jwt_validation::validate_token(signed_token.clone(), key).unwrap());
 }
