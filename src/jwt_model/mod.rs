@@ -8,6 +8,9 @@ pub enum Algorithm {
     HS256,
     HS384,
     HS512,
+    RS256,
+    RS384,
+    RS512,
 }
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug, Eq, PartialEq, Hash, PartialOrd, Ord)]
